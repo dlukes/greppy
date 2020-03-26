@@ -9,19 +9,30 @@ Print lines from FILE matching regular expression PATTERN.
 import sys
 import regex as re
 
-try:
-    pattern, path = sys.argv[1:]
-except ValueError:
-    print(__doc__.strip(), file=sys.stderr)
-    sys.exit(1)
+def grep(pattern, lines):
+    """Print lines matching pattern."""
+    for line in lines:
+        line = line.strip()
+        if re.search(pattern, line):
+            print(line)
 
-try:
-    with open(path) as file:
-        for line in file:
-            line = line.strip("\n")
-            if re.search(pattern, line):
-                print(line)
-except FileNotFoundError as err:
-    print(__doc__.strip(), file=sys.stderr)
-    print(err, file=sys.stderr)
-    sys.exit(1)
+def parse_argv(argv):
+    pattern, path = argv[1:]
+    return pattern, path
+
+def main():
+    try:
+        pattern, path = parse_argv(sys.argv)
+    except ValueError:
+        print(__doc__.strip(), file=sys.stderr)
+        sys.exit(1)
+
+    try:
+        with open(path) as file:
+            grep(pattern, file)
+    except FileNotFoundError as err:
+        print(__doc__.strip(), file=sys.stderr)
+        print(err, file=sys.stderr)
+        sys.exit(1)
+
+main()
