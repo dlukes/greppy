@@ -24,11 +24,23 @@ def parse_argv(argv):
         "begin_context": False,
     }
     positional = []
-    for arg in argv[1:]:
+    # pomocí funkce iter si vytvoříme iterátor, tj. objekt,
+    # ze kterého můžeme postupně tahat prvky nějaké kolekce
+    # *na různých místech v kódu*, protože si pamatuje,
+    # který prvek nám vydal naposledy a který je na řadě
+    # příště
+    argv_iter = iter(argv[1:])
+    # ve většině případů vytáhneme další prvek z iterátoru
+    # argumentů v hlavičce for cyklu...
+    for arg in argv_iter:
         if arg == "-L":
             args["line_numbers"] = True
         elif arg == "-B":
-            args["begin_context"] = True
+            # ... kromě případu, kdy narazíme na argument
+            # "-B", pak další prvek vytáhneme rovnou ještě
+            # v rámci toho stejného cyklu pomocí funkce next,
+            # a použijeme ho jako hodnotu pro přepínač "-B"
+            args["begin_context"] = next(argv_iter)
         else:
             positional.append(arg)
     args["pattern"], args["path"] = positional
@@ -37,7 +49,11 @@ def parse_argv(argv):
 def main():
     try:
         args = parse_argv(sys.argv)
-    except ValueError:
+    # funkce next může teoreticky vyvolat chybu StopIteration,
+    # v případě, že za přepínačem "-B" uživatel nezadal
+    # žádnou hodnotu; to je chybné zadání, které chceme
+    # odchytit
+    except (ValueError, StopIteration):
         print(__doc__.strip(), file=sys.stderr)
         sys.exit(1)
 
