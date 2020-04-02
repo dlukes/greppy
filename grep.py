@@ -23,16 +23,15 @@ def parse_argv(argv):
         "line_numbers": False,
         "begin_context": False,
     }
-    if "-L" in argv:
-        args["line_numbers"] = True
-        index = argv.index("-L")
-        del argv[index]
-    if "-B" in argv:
-        args["begin_context"] = True
-        index = argv.index("-B")
-        del argv[index]
-    args["pattern"] = argv[1]
-    args["path"] = argv[2]
+    positional = []
+    for arg in argv[1:]:
+        if arg == "-L":
+            args["line_numbers"] = True
+        elif arg == "-B":
+            args["begin_context"] = True
+        else:
+            positional.append(arg)
+    args["pattern"], args["path"] = positional
     return args
 
 def main():
