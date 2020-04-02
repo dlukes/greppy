@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 # docstring = dokumentační řetězec; uloží se do kouzelné
 # proměnné __doc__
-"""Usage: grep.py PATTERN FILE
-
-Print lines from FILE matching regular expression PATTERN.
+"""Print lines from FILE matching regular expression PATTERN.
 
 """
 import sys
+import argparse
 import regex as re
 
 def grep(pattern, lines, line_numbers):
@@ -19,47 +18,19 @@ def grep(pattern, lines, line_numbers):
             print(line)
 
 def parse_argv(argv):
-    args = {
-        "line_numbers": False,
-        "begin_context": False,
-    }
-    positional = []
-    # pomocí funkce iter si vytvoříme iterátor, tj. objekt,
-    # ze kterého můžeme postupně tahat prvky nějaké kolekce
-    # *na různých místech v kódu*, protože si pamatuje,
-    # který prvek nám vydal naposledy a který je na řadě
-    # příště
-    argv_iter = iter(argv[1:])
-    # ve většině případů vytáhneme další prvek z iterátoru
-    # argumentů v hlavičce for cyklu...
-    for arg in argv_iter:
-        if arg == "-L":
-            args["line_numbers"] = True
-        elif arg == "-B":
-            # ... kromě případu, kdy narazíme na argument
-            # "-B", pak další prvek vytáhneme rovnou ještě
-            # v rámci toho stejného cyklu pomocí funkce next,
-            # a použijeme ho jako hodnotu pro přepínač "-B"
-            args["begin_context"] = next(argv_iter)
-        else:
-            positional.append(arg)
-    args["pattern"], args["path"] = positional
-    return args
+    parser = argparse.ArgumentParser(description=__doc__.strip())
+    parser.add_argument("pattern", help="Pattern to match")
+    parser.add_argument("path", help="File to search")
+    parser.add_argument("-L", "--line-numbers", help="Print line numbers", action="store_true")
+    parser.add_argument("-B", "--begin-context", help="Print context", type=int)
+    return parser.parse_args(argv[1:])
 
 def main():
-    try:
-        args = parse_argv(sys.argv)
-    # funkce next může teoreticky vyvolat chybu StopIteration,
-    # v případě, že za přepínačem "-B" uživatel nezadal
-    # žádnou hodnotu; to je chybné zadání, které chceme
-    # odchytit
-    except (ValueError, StopIteration):
-        print(__doc__.strip(), file=sys.stderr)
-        sys.exit(1)
+    args = parse_argv(sys.argv)
 
     try:
-        with open(args["path"]) as file:
-            grep(args["pattern"], file, args["line_numbers"])
+        with open(args.path) as file:
+            grep(args.pattern, file, args.line_numbers)
     except FileNotFoundError as err:
         print(__doc__.strip(), file=sys.stderr)
         print(err, file=sys.stderr)
